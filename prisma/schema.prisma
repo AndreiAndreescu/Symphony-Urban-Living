@@ -1,0 +1,104 @@
+// Database schema for Symphony Urban Living.
+//
+// The provider line below is switched automatically by scripts/select-db.mjs:
+//   DATABASE_URL="file:./dev.db"            -> sqlite     (local development)
+//   DATABASE_URL="postgresql://..."         -> postgresql (production: Neon / Supabase)
+// You never need to edit it by hand.
+//
+// Status/role/seating fields are plain strings (validated in lib/validation.ts)
+// so the same schema works on both SQLite and Postgres.
+
+generator client {
+  provider      = "prisma-client-js"
+  // "native" = your computer / the build machine. "rhel-openssl-3.0.x" = the
+  // Amazon Linux servers that run Netlify Functions (the build image is Ubuntu,
+  // so without this the deployed site can't open the database).
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  role         String // "admin" | "owner" | "staff"
+  passwordHash String
+  active       Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Reservation {
+  id             String           @id @default(cuid())
+  code           String           @unique // short reference shown to the guest, e.g. SU-4F7Q2
+  status         String           @default("pending") // pending | confirmed | seated | cancelled | no_show
+  date           String // YYYY-MM-DD in restaurant timezone
+  time           String // HH:MM in restaurant timezone
+  service        String // "lunch" | "dinner"
+  partySize      Int
+  seating        String // "indoor" | "terrace" | "private"
+  name           String
+  email          String
+  phone          String
+  occasion       String? // birthday | anniversary | business | other
+  notes          String? // dietary restrictions / allergies / requests
+  internalNote   String? // staff-only note
+  consentAt      DateTime
+  consentVersion String
+  source         String           @default("website") // website | admin
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  logs           ReservationLog[]
+
+  @@index([date, time])
+  @@index([status])
+  @@index([email])
+}
+
+model ReservationLog {
+  id            String      @id @default(cuid())
+  reservationId String
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  action        String // created | confirmed | rescheduled | cancelled | seated | no_show | note
+  detail        String?
+  actorName     String? // null = guest via website
+  createdAt     DateTime    @default(now())
+
+  @@index([reservationId])
+}
+
+model MenuItem {
+  id          String   @id @default(cuid())
+  categoryId  String // matches a category id in content/site-content.ts
+  name        String
+  description String   @default("")
+  price       Int // RON, whole units
+  bottlePrice Int? // wine only: bottle price (price = glass)
+  tags        String   @default("") // comma separated: V,VG,GF,N,S
+  isSpecial   Boolean  @default(false) // shows in "Chef's seasonal specials"
+  available   Boolean  @default(true) // hide without deleting
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([categoryId, sortOrder])
+}
+
+model Setting {
+  key       String   @id
+  value     String // JSON
+  updatedAt DateTime @updatedAt
+}
+
+model RateLimitHit {
+  id        String   @id @default(cuid())
+  key       String
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
+}

@@ -1,0 +1,56 @@
+{
+  "name": "symphony-urban-living",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Marketing site and table reservation system for Symphony Urban Living",
+  "scripts": {
+    "dev": "node scripts/select-db.mjs && prisma generate && next dev -p ${PORT:-3000}",
+    "build": "node scripts/select-db.mjs && prisma generate && next build",
+    "start": "next start -p ${PORT:-3000}",
+    "setup": "node scripts/select-db.mjs && prisma generate && prisma db push && tsx prisma/seed.ts",
+    "build:deploy": "node scripts/select-db.mjs --require-postgres && prisma generate && prisma db push --skip-generate && tsx prisma/seed.ts && next build",
+    "db:push": "node scripts/select-db.mjs && prisma db push",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:studio": "prisma studio",
+    "menu:import": "tsx scripts/import-menu.ts",
+    "user:password": "tsx scripts/set-password.ts",
+    "images": "node scripts/generate-placeholders.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=20.12"
+  },
+  "dependencies": {
+    "@prisma/client": "6.19.3",
+    "bcryptjs": "2.4.3",
+    "framer-motion": "12.43.0",
+    "iron-session": "8.0.4",
+    "next": "15.5.25",
+    "nodemailer": "6.10.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "zod": "3.25.76"
+  },
+  "devDependencies": {
+    "@netlify/plugin-nextjs": "^5.16.0",
+    "@types/bcryptjs": "2.4.6",
+    "@types/node": "22.20.2",
+    "@types/nodemailer": "6.4.24",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "autoprefixer": "10.6.0",
+    "postcss": "8.5.28",
+    "prisma": "6.19.3",
+    "sharp": "0.34.5",
+    "tailwindcss": "3.4.19",
+    "tsx": "4.23.13",
+    "typescript": "5.9.3"
+  },
+  "allowScripts": {
+    "@prisma/client@6.19.3": true,
+    "prisma@6.19.3": true,
+    "sharp@0.34.5": true,
+    "@prisma/engines@6.19.3": true,
+    "esbuild@0.28.2": true
+  }
+}

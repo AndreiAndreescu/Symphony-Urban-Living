@@ -1,0 +1,14 @@
+# Netlify build settings. Environment variables (DATABASE_URL, SESSION_SECRET, …)
+# are NOT set here: add them in Netlify → Project configuration → Environment variables.
+
+[build]
+  # Creates/updates the database tables, seeds logins + menu (never overwrites
+  # dashboard changes), then builds the site. Requires a Postgres DATABASE_URL.
+  command = "npm run build:deploy"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
